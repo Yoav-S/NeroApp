@@ -27,7 +27,7 @@ const FIInput: React.FC<FIInputType> = (props) => {
 
     return(
         <SafeAreaView style={{alignSelf: 'center', marginTop: '5%'}}>
-            <Text style={[styles.textLabelStyle, {color: theme.Main.Black}]}>{props.label}</Text>
+            <Text style={[styles.textLabelStyle, {color: props.errorMessage && props.startValue !== '' ? 'red' : theme.Main.Black}]}>{props.errorMessage && props.startValue !== '' ? props.errorMessage : props.label}</Text>
             <View style={{  width: 328,  borderRadius: 8, display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
             <TextInput
             value={props.value}
