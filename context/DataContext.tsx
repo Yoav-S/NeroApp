@@ -10,8 +10,9 @@ export const DataProvider: React.FC<Props> = ({ children }) => {
   const [token, setToken] = useState<string>('');
 
   const api: AxiosInstance = axios.create({
-    baseURL: 'https://neroapp.onrender.com/',
+    baseURL: 'https://neroapp.onrender.com/api', // Adjust base URL to match your backend API
   });
+  
 
 
 

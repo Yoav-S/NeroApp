@@ -12,6 +12,7 @@ import OrLoginWith from "../components/uicomponents/OrLoginWith";
 import GoogleFBBtns from "../components/uicomponents/GoogleFBBtns";
 import AlreadyHaveAccount from "../components/uicomponents/AlreadyHaveAccount";
 import DotsIndicator from "../components/uicomponents/DotsIndicator";
+import { useToken } from "../context/TokenContext";
 const Signup: React.FC = (props) => {
     const { theme } = useContext(ThemeContext);
     const [firstName, setFirstName] = useState('');
@@ -25,18 +26,18 @@ const Signup: React.FC = (props) => {
     const [firstPartMounts, setfirstPartMounts] = useState(true);
     const [secondPartMounts, setsecondPartMounts] = useState(false);
     const [thirdPartMounts, setthirdPartMounts] = useState(false);
-
+    const {signupAttempt} = useToken();
     
     
     const signUpAttempt = async (password: string) => {
-        console.log(firstName);
-        console.log(lastName);
-        console.log(email);
-        console.log(phone);
-        console.log(password);
         setisThirdPartFlagSubmit(false);
         setisFirstPartFlagCheck(false);
         setisSecondPartFlagCheck(false);
+        const { success, data, error } = await signupAttempt(email, password, firstName, lastName, phone);
+        console.log(success);
+        console.log(data);
+        console.log(error);
+
     }
     return (
         <StyledWrapper style={{backgroundColor: theme.Background.White , flex: 1}} route={'Login'}>

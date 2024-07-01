@@ -22,6 +22,8 @@ import {
   } from 'formik';
   import * as Yup from 'yup';
 import StyledWrapper from "../components/uicomponents/StyledWrapper";
+import { useDataContext } from "../context/DataContext";
+import { useToken } from "../context/TokenContext";
 
 
 
@@ -32,13 +34,26 @@ const validationSchema = Yup.object().shape({
 const Login: React.FC<LoginScreenProps> = (props) => {
     const { theme } = useContext(ThemeContext);
     const navigation = useNavigation<LoginScreenProps['navigation']>();
-
+    const {loginAttempt} = useToken();
     const [Email, setEmail] = useState("");
     const [Password, setPassword] = useState("");
 
-    const handleFormSubmit = async () => {
-
-    }
+    const handleFormSubmit = async (values: { email: string, password: string }) => {
+        try {
+          const { email, password } = values;
+          const { success, data, error } = await loginAttempt(email, password);
+      
+          if (success) {
+            // Login successful, handle data (e.g., update state, set tokens)
+            console.log('Login successful:', data); // You can access data like result.data.token or result.data.user here
+          } else {
+            // Login failed, handle error
+            console.error('Login failed:', error); // Log or handle the error appropriately
+          }
+        } catch (error) {
+          console.error('An error occurred during login:', error); // Catch any unexpected errors
+        }
+      };
     return (
         <StyledWrapper style={{backgroundColor: theme.Background.White , flex: 1}} route={'Login'}>
             <ArrowBack/>

@@ -48,8 +48,9 @@ export const TokenProvider: React.FC<Props> = ({ children }) => {
   });
 
   const api: AxiosInstance = axios.create({
-    baseURL: 'https://neroapp.onrender.com/',
+    baseURL: 'https://neroapp.onrender.com/api', // Adjust base URL to match your backend API
   });
+  
 
   const validateToken = (token: string | null): {
     isValid: boolean;
@@ -76,14 +77,16 @@ export const TokenProvider: React.FC<Props> = ({ children }) => {
   };
   const loginAttempt = async (email: string, password: string): Promise<{ success: boolean; data?: any; error?: AppError }> => {
     try {
-      const result: AxiosResponse<any, any> = await api.post('/auth', { email, password });
+      const result: AxiosResponse<any, any> = await api.post('/auth/login', { email, password });
       setAuthState({
         token: result.data.token,
         authenticated: true
       });
+      setToken(result.data.token);
+      setCurrentUser(result.data.user);
       axios.defaults.headers.common['Authorization'] = `Bearer ${result.data.token}`;
       await Keychain.setGenericPassword(token_Key, result.data.token);
-      return { success: true, data: result.data };
+      return { success: true };
     } catch (error) {
       return processError(error, "An error occurred during login");
     }
@@ -95,6 +98,8 @@ export const TokenProvider: React.FC<Props> = ({ children }) => {
   const signupAttempt = async (email: string, password: string, firstName: string, lastName: string, phone: string): Promise<{ success: boolean; data?: any; error?: AppError }> => {
     try {
       const response = await api.post('/auth/signup', { email, password, firstName, lastName, phone });
+      console.log(response.data);
+      
       const { token, user } = response.data;
       setToken(token);
       setCurrentUser(user);
