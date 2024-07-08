@@ -17,10 +17,14 @@ const validationSchema = Yup.object().shape({
     email: emailSchema,
   });
 interface ForgotPasswordProps{
-    setOtpNumber: (otpNumber: string) => void;
+  setOtpNumber: React.Dispatch<React.SetStateAction<{
+    number: string;
+    toEmail: string;
+  }>>;
+  setOtpSendingFlag: (isSended: boolean) => void;
 }
 
-const SendOtpToEmail: React.FC<ForgotPasswordProps> = () => {
+const SendOtpToEmail: React.FC<ForgotPasswordProps> = ({setOtpNumber, setOtpSendingFlag}) => {
     const { theme } = useContext(ThemeContext);
     const [isLoading, setIsLoading] = useState(false);
     const {sendOtpEmailAttempt} = useToken()
@@ -29,13 +33,13 @@ const SendOtpToEmail: React.FC<ForgotPasswordProps> = () => {
         const result = await sendOtpEmailAttempt(values.email);
         setIsLoading(false);
         const { success, data, error } = result;
-
+        if(success){
+          setOtpNumber({number:data.otpNumber, toEmail: values.email});
+          setOtpSendingFlag(true);
+        }
       }
   return (
     <View>
-            <ArrowBack/>
-      <TitleAndSubTitle title={englishTranslationedSentences.forgotPasswordText} subTitle={englishTranslationedSentences.forgotPasswordHelp}/>
-
       <Formik
             initialValues={{ email: '' }}
             validationSchema={validationSchema}
@@ -62,10 +66,7 @@ const SendOtpToEmail: React.FC<ForgotPasswordProps> = () => {
       </>
           )}
         </Formik>
-          <SentenceBtn 
-          btnText={englishTranslationedSentences.loginText} 
-          sentenceText={englishTranslationedSentences.forgotPasswordText}
-          />
+
     </View>
   );
 };

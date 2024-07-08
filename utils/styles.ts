@@ -41,5 +41,11 @@ export const styles = StyleSheet.create({
         fontWeight: '700',
         fontSize: 12,
         lineHeight: 16,
+      },
+      errorTextStyle: {
+        fontFamily: 'Noto Sans',
+        fontWeight: '500',
+        fontSize: 16,
+        lineHeight: 16
       }
   });

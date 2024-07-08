@@ -1,5 +1,5 @@
 import React, { useEffect, useContext, useState } from 'react';
-import { View, StyleSheet, useColorScheme } from 'react-native';
+import { View, StyleSheet, useColorScheme  } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import * as Keychain from 'react-native-keychain';
 import { useToken } from '../context/TokenContext';
@@ -64,7 +64,7 @@ const Main: React.FC = () => {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.Background.White }]}>
+    <View style={[styles.container, { backgroundColor: theme.Background.White, flex: 1 }]}>
       {authState.authenticated ? (
         <AuthenticatedStackScreen />
       ) : (
