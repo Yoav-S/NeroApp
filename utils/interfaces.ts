@@ -1,35 +1,11 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Dispatch, SetStateAction } from "react";
 import {TextInput} from 'react-native'
-import { AppError } from './errors';
-export interface CurrentUserType{
-  _id: string;
 
-  fullName: string;
-
-  roles: string[]
-
-  email: string;
-
-
-  password: string;
-
-
-  isActive: boolean
-
-  schemaVersion: number
-
-  deviceToken: string
-
-  createdAt: Date
-
-  lastActivity: Date
-
-}
 export interface Token {
   exp: number;
   iat: number;
-  id: string;
+  userId: string;
   roles: Role[];
 }
 
@@ -48,16 +24,16 @@ export interface TokenContextType {
   signupAttempt: (email: string, password: string, firstName: string, lastName: string, phone: string) => Promise<{ 
       success: boolean; 
       data?: any; 
-      error?: AppError 
+      error?: string 
   }>;
   loginAttempt: (email: string, password: string) => Promise<{ 
       success: boolean; 
       data?: any; 
-      error?: AppError 
+      error?: string 
   }>;
   logoutAttempt: () => Promise<{ 
       success: boolean; 
-      error?: AppError 
+      error?: string 
   }>;
   authenticated: boolean;
   setAuthenticated: React.Dispatch<React.SetStateAction<boolean>>; 
@@ -75,6 +51,11 @@ export interface TokenContextType {
     isValid: boolean; 
     decodedToken: Token | null 
 };
+sendOtpEmailAttempt: (email: string) => Promise<{ 
+  success: boolean; 
+  data?: any; 
+  error?: string 
+}>;
 }
 
   export  interface ThemeContextType {
@@ -92,6 +73,7 @@ export interface Theme {
   Background: {
     White: string;
     GrayGreen: string;
+    loadingModal: string
   };
   Elements: {
     ButtonDisabled: string;
@@ -124,7 +106,10 @@ export interface Theme {
   };
 }
 
-
+export interface SentenceBtnType{
+  sentenceText: string;
+  btnText: string;
+}
   export interface DataContextType {
 
 
@@ -134,29 +119,23 @@ export interface Theme {
   }
   export interface CurrentUserType {
 
-    _id: string;
+    userId: string;
 
-    fullName: string;
+    firstName: string;
 
-    roles: string[]
+    lastName: string;
+
+    role: Role
 
     email: string;
 
     password: string;
 
-    gender: string
-
-    birthDate: Date
-
-    isActive: boolean
-
     schemaVersion: number
 
-    deviceToken: string
+    token: Token
 
     createdAt: Date
-
-    transactionsAmount: number
 
     lastActivity: Date
 
@@ -166,9 +145,9 @@ export interface FIButtonType{
   text: string
   disabled: boolean
   onPress: () => void;
-  backGroundColor: string;
-  disabledBackgroundColor: string;
-  textColor: string;
+  backGroundColor?: string;
+  disabledBackgroundColor?: string;
+  textColor?: string;
   borderWidth?: number;
   borderColor?: string;
   borderRadius?: number;

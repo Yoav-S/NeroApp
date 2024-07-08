@@ -31,7 +31,7 @@ const FIButton: React.FC<FIButtonType> = (props) => {
                     isPressed ? 
                     props.buttonPressedBackgroundColor : 
                     props.backGroundColor,
-                   borderRadius: props.borderRadius,
+                   borderRadius: props.disabled? 16 : 10,
                    borderColor: props.borderColor,
                    borderWidth: props.borderWidth  ,
                    marginTop: props.text === 'Sign Up' || props.text === 'Next' ? '10%' : '5%'

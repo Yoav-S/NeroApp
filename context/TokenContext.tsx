@@ -2,37 +2,18 @@ import React, { createContext, useContext, useState } from 'react';
 import { TokenContextType, Token, Props, CurrentUserType } from '../utils/interfaces';
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 import * as Keychain from 'react-native-keychain';
-import { HttpStatusCode, AppErrorCode, createError, mapHttpStatusToErrorCode, AppError } from '../utils/errors';
+
 import { jwtDecode } from 'jwt-decode';
 const TokenContext = createContext<TokenContextType | undefined>(undefined);
-export const token_Key = 'jwt-key';
+const TOKEN_KEY = process.env.TOKEN_KEY
+
+
 
 // Type guard for error response
-interface ErrorResponse {
-  message: string;
-}
 
-function isErrorResponse(obj: unknown): obj is ErrorResponse {
-  return typeof obj === 'object' && obj !== null && 'message' in obj;
-}
 
-// Helper function to process errors
-const processError = (error: unknown, defaultMessage: string): { success: false; error: AppError } => {
-  if (axios.isAxiosError(error)) {
-    const axiosError = error as AxiosError;
-    if (axiosError.response) {
-      const statusCode = axiosError.response.status as HttpStatusCode;
-      const appErrorCode = mapHttpStatusToErrorCode(statusCode);
-      const errorMessage = isErrorResponse(axiosError.response.data) 
-        ? axiosError.response.data.message 
-        : defaultMessage;
-      return { success: false, error: createError(appErrorCode, errorMessage, statusCode) };
-    } else if (axiosError.request) {
-      return { success: false, error: createError(AppErrorCode.NETWORK_ERROR, "No response received from server") };
-    }
-  }
-  return { success: false, error: createError(AppErrorCode.UNKNOWN_ERROR, defaultMessage) };
-};
+
+
 
 
 export const TokenProvider: React.FC<Props> = ({ children }) => {
@@ -48,7 +29,7 @@ export const TokenProvider: React.FC<Props> = ({ children }) => {
   });
 
   const api: AxiosInstance = axios.create({
-    baseURL: 'https://neroapp.onrender.com/api', // Adjust base URL to match your backend API
+    baseURL: 'https://neroappbackend.onrender.com', // Adjust base URL to match your backend API
   });
   
 
@@ -75,27 +56,37 @@ export const TokenProvider: React.FC<Props> = ({ children }) => {
       return { isValid: false, decodedToken: null };
     }
   };
-  const loginAttempt = async (email: string, password: string): Promise<{ success: boolean; data?: any; error?: AppError }> => {
+  const loginAttempt = async (email: string, password: string): Promise<{ success: boolean; data?: any; error?: string }> => {
+    console.log('arrived');
+    
     try {
-      const result: AxiosResponse<any, any> = await api.post('/auth/login', { email, password });
-      setAuthState({
-        token: result.data.token,
-        authenticated: true
-      });
-      setToken(result.data.token);
-      setCurrentUser(result.data.user);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${result.data.token}`;
-      await Keychain.setGenericPassword(token_Key, result.data.token);
-      return { success: true };
-    } catch (error) {
-      return processError(error, "An error occurred during login");
+      const result: AxiosResponse = await api.post('/auth/login', { email, password });  
+      if (result.data && result.data.user) {
+        setAuthState({
+          token: result.data.user.token,
+          authenticated: true
+        });
+        setToken(result.data.user.token);
+        setCurrentUser(result.data.user);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${result.data.user.token}`;
+        await Keychain.setGenericPassword(TOKEN_KEY || '', result.data.user.token);
+  
+        return { success: true, data: result.data.user, error: 'You have been successfully logged in' };
+      } else {
+        return { success: false, error: 'Login failed, no user data returned' };
+      }
+    } catch (error: any) {
+      console.error('Error during login attempt:', error);
+      return { success: false, error: error.message };
     }
   };
+  
+  
   async function handleTokenError(): Promise<void> {
     // show the dialog 
     logoutAttempt();
   }
-  const signupAttempt = async (email: string, password: string, firstName: string, lastName: string, phone: string): Promise<{ success: boolean; data?: any; error?: AppError }> => {
+  const signupAttempt = async (email: string, password: string, firstName: string, lastName: string, phone: string): Promise<{ success: boolean; data?: any; error?: string }> => {
     try {
       const response = await api.post('/auth/signup', { email, password, firstName, lastName, phone });
       console.log(response.data);
@@ -107,27 +98,37 @@ export const TokenProvider: React.FC<Props> = ({ children }) => {
         token: token,
         authenticated: true
       });
-      return { success: true, data: response.data };
-    } catch (error) {
-      return processError(error, "An error occurred during signup");
+      return { success: true, data: response.data.user, error: 'You have been successfully registered' };
+    } catch (error: any) {
+      return { success: false, error: error.message };
     }
   };
 
-  const logoutAttempt = async (): Promise<{ success: boolean; error?: AppError }> => {
+  const logoutAttempt = async (): Promise<{ success: boolean; error?: string }> => {
     try {
-      await Keychain.setGenericPassword(token_Key, '');
+      // Clear stored credentials
+      await Keychain.resetGenericPassword();
       axios.defaults.headers.common['Authorization'] = '';
       setAuthState({
         token: null,
         authenticated: false
       });
+      
       return { success: true };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Logout error:', error);
-      return processError(error, "An error occurred during logout");
+      return { success: false, error: 'Error trying to logout' };
     }
   };
-
+  
+  const sendOtpEmailAttempt = async (email: string): Promise<{success: boolean; error?: string}>=>{
+    try {
+      return { success: true };
+    } catch (error: any) {
+      console.error('Logout error:', error);
+      return { success: false, error: 'Error trying to logout' };
+    }
+  } 
   return (
     <TokenContext.Provider value={{ 
       token, 
@@ -141,7 +142,8 @@ export const TokenProvider: React.FC<Props> = ({ children }) => {
       setAuthenticated,
       setAuthState,
       authState,
-      validateToken }}>
+      validateToken ,
+      sendOtpEmailAttempt}}>
       {children}
     </TokenContext.Provider>
   );

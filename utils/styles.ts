@@ -7,6 +7,7 @@ export const styles = StyleSheet.create({
       fontSize: 24,
       lineHeight: 28,
       alignSelf: 'center',
+      textAlign: 'center'
     },
     textSubTitleStyle: {
       fontFamily: 'Noto Sans',
@@ -14,6 +15,8 @@ export const styles = StyleSheet.create({
       fontSize: 16,
       lineHeight: 24,
       alignSelf: 'center',
+      textAlign: 'center'
+
     },
     textLabelStyle: {
         fontFamily: 'Noto Sans',

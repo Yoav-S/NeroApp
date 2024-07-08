@@ -12,9 +12,9 @@ interface Props {
 const TitleAndSubTitle: React.FC<Props> = ({title, subTitle}) => {
     const { theme } = useContext(ThemeContext);
   return (
-    <View>
+    <View style={{width: 322, alignSelf: 'center'}}>
       <Text style={[styles.textTitleStyle, {color: theme.Main.Black}]}>{title}</Text>
-      <Text style={[styles.textSubTitleStyle, {color: theme.Main.Black}]}>{subTitle}</Text>
+      <Text style={[styles.textSubTitleStyle, {color: theme.Main.Black, marginTop: 20}]}>{subTitle}</Text>
     </View>
   );
 };

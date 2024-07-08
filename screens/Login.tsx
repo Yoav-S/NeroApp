@@ -12,6 +12,7 @@ import type { LoginScreenProps } from "../utils/interfaces";
 import OrLoginWith from "../components/uicomponents/OrLoginWith";
 import GoogleFBBtns from "../components/uicomponents/GoogleFBBtns";
 import { emailSchema, passwordSchema } from "../utils/statements";
+import LoadingModal from "../components/modals/LoadingModal";
 import {
     Formik,
     FormikHelpers,
@@ -34,26 +35,29 @@ const validationSchema = Yup.object().shape({
 const Login: React.FC<LoginScreenProps> = (props) => {
     const { theme } = useContext(ThemeContext);
     const navigation = useNavigation<LoginScreenProps['navigation']>();
+    const [isLoading, setIsLoading] = useState(false);
     const {loginAttempt} = useToken();
-    const [Email, setEmail] = useState("");
-    const [Password, setPassword] = useState("");
 
     const handleFormSubmit = async (values: { email: string, password: string }) => {
-        try {
-          const { email, password } = values;
-          const { success, data, error } = await loginAttempt(email, password);
-      
-          if (success) {
-            // Login successful, handle data (e.g., update state, set tokens)
-            console.log('Login successful:', data); // You can access data like result.data.token or result.data.user here
-          } else {
-            // Login failed, handle error
-            console.error('Login failed:', error); // Log or handle the error appropriately
-          }
-        } catch (error) {
-          console.error('An error occurred during login:', error); // Catch any unexpected errors
+      try {
+        const { email, password } = values;
+        setIsLoading(true);
+        const result = await loginAttempt(email, password);
+        setIsLoading(false);
+    
+        const { success, data, error } = result;
+        if (success) {
+          // Login successful, handle data (e.g., update state, set tokens)
+          console.log('Login successful:', data); // You can access data like result.data.token or result.data.user here
+        } else {
+          // Login failed, handle error
+          console.error('Login failed:', error); // Log or handle the error appropriately
         }
-      };
+      } catch (error) {
+        console.error('An error occurred during login:', error); // Catch any unexpected errors
+      }
+    };
+    
     return (
         <StyledWrapper style={{backgroundColor: theme.Background.White , flex: 1}} route={'Login'}>
             <ArrowBack/>
@@ -96,7 +100,7 @@ const Login: React.FC<LoginScreenProps> = (props) => {
                 textColor={theme.Text.ButtonText}
                 text={englishTranslationedSentences.loginText}
                 borderRadius={10}
-                disabled={!isValid  || (values.email === '' && values.password === '')} 
+                disabled={!isValid  || (values.email === '' && values.password === '') || isLoading} 
                 onPress={handleSubmit}
                 />
                       </>
@@ -114,6 +118,7 @@ const Login: React.FC<LoginScreenProps> = (props) => {
                     </View>
 
                     </ScrollView>
+                    {isLoading && <LoadingModal/>}
                   </StyledWrapper>
     )
 }

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
 import { DataContextType, Props, CurrentUserType } from '../utils/interfaces';
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import * as Keychain from 'react-native-keychain';
 import jwt, {sign} from 'react-native-pure-jwt'
 import { Token } from '../utils/interfaces';
@@ -10,7 +10,7 @@ export const DataProvider: React.FC<Props> = ({ children }) => {
   const [token, setToken] = useState<string>('');
 
   const api: AxiosInstance = axios.create({
-    baseURL: 'https://neroapp.onrender.com/api', // Adjust base URL to match your backend API
+    baseURL: 'https://neroappbackend.onrender.com', // Adjust base URL to match your backend API
   });
   
 
@@ -21,11 +21,13 @@ export const DataProvider: React.FC<Props> = ({ children }) => {
 
 
   const getUserById = async (userId: string | null, token: string | null): Promise<CurrentUserType | null> => {
+
+    
     try {
-      const response = await api.get(`/auth/user/${userId}`, {
+      const result: AxiosResponse<any, any> =await api.get(`/auth/getUserById/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
-      });
-      return response.data;
+      });      
+      return result.data.user;
     } catch (error) {
       console.error('Error fetching user data:', error);
       return null;
