@@ -20,6 +20,7 @@ const Signup: React.FC = (props) => {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setconfirmPassword] = useState('');
     const [firstPartFlagCheck, setisFirstPartFlagCheck] = useState(false);
     const [secondPartFlagCheck, setisSecondPartFlagCheck] = useState(false);
     const [thirdPartFlagSubmit, setisThirdPartFlagSubmit] = useState(false);
@@ -34,10 +35,6 @@ const Signup: React.FC = (props) => {
         setisFirstPartFlagCheck(false);
         setisSecondPartFlagCheck(false);
         const { success, data, error } = await signupAttempt(email, password, firstName, lastName, phone);
-        console.log(success);
-        console.log(data);
-        console.log(error);
-
     }
     return (
         <StyledWrapper style={{backgroundColor: theme.Background.White , flex: 1}} route={'Login'}>
@@ -47,6 +44,8 @@ const Signup: React.FC = (props) => {
     {
         !firstPartFlagCheck ? 
         (<RegisterionFirstPart 
+        firstName={firstName}
+        lastName={lastName}    
         setfirstPartMounts={setfirstPartMounts} 
         setsecondPartMounts={setsecondPartMounts}
         setthirdPartMounts={setthirdPartMounts}
@@ -56,6 +55,8 @@ const Signup: React.FC = (props) => {
         />) : 
         (!secondPartFlagCheck ? 
             (<RegisterionSecondPart 
+            email={email}
+            phone={phone}
             setfirstPartMounts={setfirstPartMounts} 
             setsecondPartMounts={setsecondPartMounts}
             setthirdPartMounts={setthirdPartMounts}
@@ -64,6 +65,9 @@ const Signup: React.FC = (props) => {
             setisSecondPartFlagCheck={setisSecondPartFlagCheck}
             />) :
         (<RegisterionThirdPart 
+        confirmPassword={confirmPassword}
+        setconfirmPassword={setconfirmPassword}
+          password={password}
           setfirstPartMounts={setfirstPartMounts} 
           setsecondPartMounts={setsecondPartMounts}
           setthirdPartMounts={setthirdPartMounts} 

@@ -45,7 +45,8 @@ export const styles = StyleSheet.create({
       errorTextStyle: {
         fontFamily: 'Noto Sans',
         fontWeight: '500',
-        fontSize: 16,
+        color: 'red',
+        fontSize: 12,
         lineHeight: 16
       }
   });

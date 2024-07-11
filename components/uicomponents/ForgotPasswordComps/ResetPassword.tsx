@@ -9,7 +9,7 @@ import { englishTranslationedSentences } from '../../../utils/sentences';
 import FIButton from '../FIButton';
 import { ThemeContext } from '../../../context/ThemeContext';
 interface Props {
-    setPasswordChangedFlag: (isChanged: boolean) => void;
+    isLoading: boolean,
     setNewUserPassword: (newPassword: string) => void;
 }
 const validationSchema = Yup.object().shape({
@@ -18,12 +18,11 @@ const validationSchema = Yup.object().shape({
       .oneOf([Yup.ref('password')], 'Passwords must match')
       .required('Confirm password is required'),
 });
-const ResetPassword: React.FC<Props> = ({setPasswordChangedFlag, setNewUserPassword}) => {
+const ResetPassword: React.FC<Props> = ({ setNewUserPassword, isLoading}) => {
     const { theme } = useContext(ThemeContext);
 
     const handleFormSubmit = (values: {password: string}) => {
         setNewUserPassword(values.password);
-        setPasswordChangedFlag(true);
     }
   return (
     <View>
@@ -35,6 +34,7 @@ const ResetPassword: React.FC<Props> = ({setPasswordChangedFlag, setNewUserPassw
                 {({handleChange, handleSubmit, values, errors, isValid, dirty, touched}) => (
                     <>
                         <FIInput
+                        
                             placeholder={englishTranslationedSentences.yourPasswordPlaceholder}
                             label={englishTranslationedSentences.passwordLabelText}
                             onChangeText={handleChange('password')}
@@ -58,7 +58,7 @@ const ResetPassword: React.FC<Props> = ({setPasswordChangedFlag, setNewUserPassw
                     </View>
                         <FIButton
                             text={englishTranslationedSentences.signUpText}
-                            disabled={!isValid || (values.password === '' && values.confirmPassword === '')} 
+                            disabled={!isValid || (values.password === '' && values.confirmPassword === '') || isLoading} 
                             onPress={() => {
                                 handleSubmit();
                             }}

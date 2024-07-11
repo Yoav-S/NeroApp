@@ -56,6 +56,11 @@ sendOtpEmailAttempt: (email: string) => Promise<{
   data?: any; 
   error?: string 
 }>;
+resetPasswordAttempt: (password: string ,email: string) => Promise<{ 
+  success: boolean; 
+  isChanged: any; 
+  error?: string 
+}>;
 }
 
   export  interface ThemeContextType {
@@ -168,6 +173,10 @@ export interface FIInputType{
   numeric?: boolean;
   ref?: React.RefObject<TextInput>;
   maxLength?: number;
+  isTypedWrongFormat?: boolean;
+  placeholderError?: string;
+  setisTypedWrongFormat?: (isWrong: boolean) => void;
+  bottomErrorMessage?: string;
 }
 export interface AuthenticatedStackType{
   

@@ -37,56 +37,95 @@ const Login: React.FC<LoginScreenProps> = (props) => {
     const navigation = useNavigation<LoginScreenProps['navigation']>();
     const [isLoading, setIsLoading] = useState(false);
     const {loginAttempt} = useToken();
+    const [isTypedWrongEmailFormat, setisTypedWrongEmailFormat] = useState(false);
+    const [isTypedWrongPasswordFormat, setisTypedWrongPasswordFormat] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
-    const handleFormSubmit = async (values: { email: string, password: string }) => {
-      try {
-        const { email, password } = values;
-        setIsLoading(true);
-        const result = await loginAttempt(email, password);
-        setIsLoading(false);
-    
-        const { success, data, error } = result;
-        if (success) {
-          // Login successful, handle data (e.g., update state, set tokens)
-          console.log('Login successful:', data); // You can access data like result.data.token or result.data.user here
-        } else {
-          // Login failed, handle error
-          console.error('Login failed:', error); // Log or handle the error appropriately
+    const handleLoginAttempt = async () => {
+      const { isPasswordValid, isEmailValid } = await verifyUserInputs(email, password);
+      console.log(isPasswordValid, isEmailValid);
+      if(isPasswordValid && isEmailValid){
+        setisTypedWrongPasswordFormat(false);
+        setisTypedWrongEmailFormat(false);
+        try {
+          setIsLoading(true);
+          const result = await loginAttempt(email, password);
+          setIsLoading(false);
+      
+          const { success, data, error } = result;
+          if (success) {
+            // Login successful, handle data (e.g., update state, set tokens)
+            console.log('Login successful:', data); // You can access data like result.data.token or result.data.user here
+          } else {
+            // Login failed, handle error
+            console.error('Login failed:', error); // Log or handle the error appropriately
+          }
+        } catch (error) {
+          console.error('An error occurred during login:', error); // Catch any unexpected errors
         }
-      } catch (error) {
-        console.error('An error occurred during login:', error); // Catch any unexpected errors
       }
-    };
+      else{
+        if(!isPasswordValid){
+          setisTypedWrongPasswordFormat(true);
+          setPassword('');
+          if(isEmailValid){
+            setisTypedWrongEmailFormat(false);
+          }
+        }
+        if(!isEmailValid){
+          setisTypedWrongEmailFormat(true);
+          setEmail('');
+          if(isPasswordValid){
+            setisTypedWrongPasswordFormat(false);
+          }
+        }
+      }
+    }
+
+    const verifyUserInputs = async (email: string, password: string) => {      
+        let isEmailValid = true;
+        let isPasswordValid = true;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isValidEmail: boolean = emailRegex.test(email);
+        if(password.length < 7){
+          isPasswordValid = false;
+        }
+        if (!isValidEmail){
+          isEmailValid = false;
+        }
+        return {isPasswordValid, isEmailValid}
+    }
+
+    
     
     return (
         <StyledWrapper style={{backgroundColor: theme.Background.White , flex: 1}} route={'Login'}>
             <ArrowBack/>
             <TitleAndSubTitle title={englishTranslationedSentences.wbNeroText} subTitle={englishTranslationedSentences.chooseLoginOptionText}/>
             <ScrollView style={{margin: '3%'}} showsVerticalScrollIndicator={false}>
-            <Formik
-            initialValues={{ email: '', password: '' }}
-            validationSchema={validationSchema}
-            onSubmit={handleFormSubmit}
-           >
-          {({ handleChange, handleSubmit, values, errors, isValid, dirty, touched }) => (
-            <>
+
                 <FIInput 
+                placeholderError={englishTranslationedSentences.placeHolderEmailErrorMessage}
+                errorMessage={englishTranslationedSentences.theEmailIsWrong}
                 label={englishTranslationedSentences.emailLabelText} 
-                value={values.email}
-                startValue={values.email}
-                errorMessage={errors.email}
-                onChangeText={handleChange('email')}
+                value={email}
+                startValue={email}
+                onChangeText={(email: string) => {setEmail(email);}}
                 placeholder={englishTranslationedSentences.yourEmailAddressPlaceholder}
-                onPress={() => {handleChange('email')('')}}
+                isTypedWrongFormat={isTypedWrongEmailFormat}
+                setisTypedWrongFormat={setisTypedWrongEmailFormat}
                 />
                 <FIInput 
-                value={values.password}
-                startValue={values.password}
-                errorMessage={errors.password}
+                placeholderError={englishTranslationedSentences.placeHolderPasswordErrorMessage}
+                errorMessage={englishTranslationedSentences.thePasswordIsWrong}
+                value={password}
+                startValue={password}
                 label={englishTranslationedSentences.passwordLabelText} 
-                onChangeText={handleChange('password')}
+                onChangeText={(password: string) => {setPassword(password);}}
                 placeholder={englishTranslationedSentences.yourPasswordPlaceholder}
-                onPress={() => {handleChange('password')('')}}
+                isTypedWrongFormat={isTypedWrongPasswordFormat}
+                setisTypedWrongFormat={setisTypedWrongPasswordFormat}
                 />   
                 <View style={{position: 'relative', marginTop: '3%', marginBottom: '10%'}}>
                 <TouchableOpacity onPress={() => {navigation.navigate('ForgotPassword')}} style={{position: 'absolute', right: 25, top: 15}}>
@@ -100,12 +139,10 @@ const Login: React.FC<LoginScreenProps> = (props) => {
                 textColor={theme.Text.ButtonText}
                 text={englishTranslationedSentences.loginText}
                 borderRadius={10}
-                disabled={!isValid  || (values.email === '' && values.password === '') || isLoading} 
-                onPress={handleSubmit}
+                disabled={(email === '' || password === '') || isLoading} 
+                onPress={handleLoginAttempt}
                 />
-                      </>
-    )}
-  </Formik>
+
                     <OrLoginWith/>
                     <GoogleFBBtns 
                     onPressFacebook={() => {console.log('Facebook Pressed');}} 

@@ -46,7 +46,10 @@ const OtpInputCom: React.FC<Props> = ({isTypedWrongOtp, handleOtpAttempt, sendOt
   };
 
 
-
+  const handleSendAgainOtp = () => {
+    sendOtpAgain();
+    startCountdown();
+  }
 
   return (
     <View style={{ width: 300, alignSelf: 'center', marginTop: 28,}}>
@@ -77,10 +80,7 @@ const OtpInputCom: React.FC<Props> = ({isTypedWrongOtp, handleOtpAttempt, sendOt
         <View style={{alignSelf: 'center', flexDirection: 'row', gap: 6}}>
             <TouchableOpacity 
             disabled={isActive} 
-            onPress={() => 
-            {sendOtpAgain
-            startCountdown();
-            }}>
+            onPress={handleSendAgainOtp}>
                 <Text style={[styles.forgotPasswordTextStyle, {color: theme.Main.Black}]}>
                     {englishTranslationedSentences.sendCodeAgain}
                 </Text>

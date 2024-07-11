@@ -13,7 +13,7 @@ export const ThemeProvider: React.FC<Props> = ({ children }) => {
     Background: {
       White: '#FFFFFF',
       GrayGreen: '#E5EAEB',
-      loadingModal: 'rgba(0, 0, 0, 0.3)'
+      loadingModal: 'rgba(0, 0, 0, 0.1)'
     },
     Elements: {
       ButtonDisabled: '#D3D3D9',
@@ -54,7 +54,7 @@ export const ThemeProvider: React.FC<Props> = ({ children }) => {
     Background: {
       White: '#FFFFFF',
       GrayGreen: '#E5EAEB',
-      loadingModal: 'rgba(0, 0, 0, 0.1)'
+      loadingModal: 'rgba(0, 0, 0, 0.5)'
     },
     Elements: {
       ButtonDisabled: '#D3D3D9',

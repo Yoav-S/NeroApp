@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import { ScrollView, SafeAreaView, Dimensions, KeyboardAvoidingView, Platform} from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import { englishTranslationedSentences } from '../utils/sentences';
@@ -11,12 +11,13 @@ import OtpInputCom from '../components/uicomponents/ForgotPasswordComps/OtpInput
 import { useToken } from '../context/TokenContext';
 import ResetPassword from '../components/uicomponents/ForgotPasswordComps/ResetPassword';
 import PasswordChanged from '../components/uicomponents/ForgotPasswordComps/PasswordChanged';
+import LoadingModal from '../components/modals/LoadingModal';
 const screen = Dimensions.get('window');
 
 const ForgotPassword: React.FC = () => {
   const { theme } = useContext(ThemeContext);
-  const {sendOtpEmailAttempt} = useToken();
-  const [isloadingOtpSending, setisLoadingOtpSending] = useState(false);
+  const {sendOtpEmailAttempt, resetPasswordAttempt} = useToken();
+  const [isLoading, setisloading] = useState(false);
   const [isTypedWrongOtp, setisTypedWrongOtp] = useState(false);
   const [otpNumber, setOtpNumber] = useState<{
     number: string;
@@ -28,15 +29,10 @@ const ForgotPassword: React.FC = () => {
   const [firstOtpSendingFlag, setOtpSendingFlag] = useState(false); 
   const [otpVerifiedFlag, setOtpVerifiedFlag] = useState(false); 
   const [passwordChangedFlag, setPasswordChangedFlag] = useState(false); 
-  const [currentTopSentence, setCurrentTopSentence] = useState(englishTranslationedSentences.forgotPasswordText);
-  const [currentBottomSentence, setCurrentBottomSentence] = useState(englishTranslationedSentences.forgotPasswordHelp);
 
-  const sendOtpAgain = async () => {
-    setisLoadingOtpSending(true);
-    const result = await sendOtpEmailAttempt(otpNumber.toEmail);
-    setisLoadingOtpSending(false);
-    const { success, data, error } = result;
-    setOtpNumber(data.otpNumber);
+
+  const sendOtpAgain = async () => {    
+    handleSendOtp(otpNumber.toEmail);
   }
 
   const handleOtpAttempt = async (userOtpNumber: string) => {
@@ -51,8 +47,32 @@ const ForgotPassword: React.FC = () => {
   }
 
   const handleUserPasswordChange = async (newPassword: string) => {
-    console.log(newPassword);
+    setisloading(true);
+    const result = await resetPasswordAttempt(newPassword ,otpNumber.toEmail);
+    setisloading(false);
+    const { success, isChanged, error } = result;
+    console.log('change password results:');
+    if(isChanged){
+    setPasswordChangedFlag(isChanged);
+    } else{
+
+    }
+    
   }
+
+  const handleSendOtp = async (email: string) => { 
+     setisloading(true);
+      const result = await sendOtpEmailAttempt(email);
+      setisloading(false);
+      const { success, data, error } = result;
+      if(success){
+        setOtpNumber({number:data, toEmail: email});
+        setOtpSendingFlag(true);
+      }else{
+        setOtpNumber({number: '00000', toEmail: email});
+        setOtpSendingFlag(true);
+      }
+    }  
 
 
   return (  
@@ -63,21 +83,51 @@ const ForgotPassword: React.FC = () => {
     >
     <ArrowBack/>
     <TitleAndSubTitle 
-    title={currentTopSentence} 
-    subTitle={currentBottomSentence}/>
+  title={!firstOtpSendingFlag ? 
+    englishTranslationedSentences.forgotPasswordText : 
+    !otpVerifiedFlag ? 
+    englishTranslationedSentences.pleaseCheckYourEmail : 
+    !passwordChangedFlag ? 
+    englishTranslationedSentences.rememberPassword : 
+    englishTranslationedSentences.passwordChanged
+  } 
+  subTitle={!firstOtpSendingFlag ? 
+    englishTranslationedSentences.forgotPasswordHelp : 
+    !otpVerifiedFlag ? 
+    `${englishTranslationedSentences.weveSentEmailTo}\n${otpNumber.toEmail}` : 
+    !passwordChangedFlag ? 
+    englishTranslationedSentences.pleaseTypeSomething : 
+    englishTranslationedSentences.yourPasswordHasBeenChanged
+  }
+/>
 
 
 
 
-      <SafeAreaView style={{flex: 1, backgroundColor: theme.Background.White, margin: 4, height: screen.height}}>
+      <SafeAreaView style={{flex: 1, backgroundColor: theme.Background.White,  height: screen.height}}>
         <ScrollView contentContainerStyle={{flexGrow: 1, justifyContent: 'space-between'}}>
 
 
 
-         <PasswordChanged/>
+         {
+          !firstOtpSendingFlag ? 
+          (<SendOtpToEmail 
+            isLoading={isLoading}
+            setOtpNumber={setOtpNumber}
+            handleSendOtp={handleSendOtp}/>) : 
+            (!otpVerifiedFlag ? 
+              (<OtpInputCom 
+                isTypedWrongOtp={isTypedWrongOtp} 
+                handleOtpAttempt={handleOtpAttempt} 
+                sendOtpAgain={sendOtpAgain} 
+                setOtpVerifiedFlag={setOtpVerifiedFlag}/>) : 
+                (!passwordChangedFlag ? 
+                  (<ResetPassword isLoading={isLoading} setNewUserPassword={handleUserPasswordChange}/>) : 
+                  (<PasswordChanged/>)))
+         }
 
 
-          { !firstOtpSendingFlag || !otpVerifiedFlag || !passwordChangedFlag && <SentenceBtn 
+          { (!firstOtpSendingFlag || !otpVerifiedFlag || !passwordChangedFlag) && <SentenceBtn 
             btnText={englishTranslationedSentences.loginText} 
             sentenceText={englishTranslationedSentences.forgotPasswordText}
           />}
@@ -85,7 +135,7 @@ const ForgotPassword: React.FC = () => {
       </SafeAreaView>
 
 
-
+{isLoading && <LoadingModal/>}
     </KeyboardAvoidingView>
   );
 };

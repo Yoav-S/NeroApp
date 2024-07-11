@@ -57,7 +57,7 @@ export const TokenProvider: React.FC<Props> = ({ children }) => {
     }
   };
   const loginAttempt = async (email: string, password: string): Promise<{ success: boolean; data?: any; error?: string }> => {
-    console.log('arrived');
+    console.log('arrived login');
     
     try {
       const result: AxiosResponse = await api.post('/auth/login', { email, password });  
@@ -66,6 +66,7 @@ export const TokenProvider: React.FC<Props> = ({ children }) => {
           token: result.data.user.token,
           authenticated: true
         });
+        console.log(result.data);
         setToken(result.data.user.token);
         setCurrentUser(result.data.user);
         axios.defaults.headers.common['Authorization'] = `Bearer ${result.data.user.token}`;
@@ -121,14 +122,33 @@ export const TokenProvider: React.FC<Props> = ({ children }) => {
     }
   };
   
-  const sendOtpEmailAttempt = async (email: string): Promise<{success: boolean; error?: string}>=>{
+  const resetPasswordAttempt = async (password: string, email: string): Promise<{isChanged: any; success: boolean; error?: string}> => {
+try{
+  const response = await api.post(`/auth/resetPassword`, {password, email});
+  console.log(response.data);
+  return { isChanged: response.data, success: true };   
+} catch (error: any) {
+  console.error('Logout error:', error);
+  return { isChanged: false,success: false, error: 'Error changing password' };
+}
+  }
+
+  const sendOtpEmailAttempt = async (email: string): Promise<{data?: any; success: boolean; error?: string}> => {
     try {
-      return { success: true };
+      console.log('Sending OTP to email:', email);
+      const response = await api.post(`/auth/sendEmailOTP/${encodeURIComponent(email)}`);
+      console.log('OTP sending response:', response.data.otp);
+      if(response.data.otp.length === 4){
+        return { data: response.data.otp, success: true };
+      }
+      else{
+        return {data: response.data.otp ,success: false };// even that it not sended
+      }
     } catch (error: any) {
-      console.error('Logout error:', error);
-      return { success: false, error: 'Error trying to logout' };
+      console.error('OTP send error:', error.response?.data || error.message);
+      return { success: false, error: 'Please check your email' };// even that it not sended
     }
-  } 
+  }
   return (
     <TokenContext.Provider value={{ 
       token, 
@@ -143,7 +163,8 @@ export const TokenProvider: React.FC<Props> = ({ children }) => {
       setAuthState,
       authState,
       validateToken ,
-      sendOtpEmailAttempt}}>
+      sendOtpEmailAttempt,
+      resetPasswordAttempt}}>
       {children}
     </TokenContext.Provider>
   );

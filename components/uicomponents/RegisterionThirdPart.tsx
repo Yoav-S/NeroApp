@@ -19,7 +19,9 @@ interface RegisterionFirstPartProps {
     setthirdPartMounts: (isMounted: boolean) => void;
     setfirstPartMounts: (isMounted: boolean) => void;
     setsecondPartMounts: (isMounted: boolean) => void;
-
+    password: string;
+    confirmPassword: string;
+    setconfirmPassword: (confirmPassword: string) => void;
 }
 
 const validationSchema = Yup.object().shape({
@@ -30,50 +32,84 @@ const validationSchema = Yup.object().shape({
 });
 
 
-const RegisterionThirdPart: React.FC<RegisterionFirstPartProps> = ({setPassword, setisThirdPartFlagSubmit, signUpAttempt, setthirdPartMounts,setsecondPartMounts, setfirstPartMounts}) => {
+const RegisterionThirdPart: React.FC<RegisterionFirstPartProps> = ({confirmPassword, setconfirmPassword,password,setPassword, setisThirdPartFlagSubmit, signUpAttempt, setthirdPartMounts,setsecondPartMounts, setfirstPartMounts}) => {
     const { theme } = useContext(ThemeContext);
     const [isChecked, setisChecked] = useState(false);
     const [toggleCheckBox, setToggleCheckBox] = useState(false);
+    const [isTypedWrongPasswordFormat, setisTypedWrongPasswordFormat] = useState(false);
+    const [isTypedWrongconfirmPasswordFormat, setisTypedWrongconfirmPasswordFormat] = useState(false);
     const [isModalChecked, setIsModalChecked] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
-    const handleNextBtn = async (values: { password: string; confirmPassword: string }, formikHelpers: FormikHelpers<{ password: string; confirmPassword: string }>) => {
-        setPassword(values.password);
-        setisThirdPartFlagSubmit(true);        
-        signUpAttempt(values.password);
-    }
-
+    const handleNextBtn = async () => {
+        const { isPasswordValid, isConfirmPasswordValid } = await verifyUserInputs(password, confirmPassword);
+        if (isPasswordValid && isConfirmPasswordValid && toggleCheckBox) {
+            setPassword(password);
+            setisThirdPartFlagSubmit(true);
+            signUpAttempt(password);
+        } else {
+            if(!isPasswordValid){
+                setisTypedWrongPasswordFormat(true);
+                setPassword('');
+                if(isConfirmPasswordValid){
+                    setisTypedWrongconfirmPasswordFormat(false);
+                }
+            }
+            if(!isConfirmPasswordValid){
+                setisTypedWrongconfirmPasswordFormat(true);
+                setconfirmPassword('');
+                if(isPasswordValid){
+                    setisTypedWrongPasswordFormat(false);
+                }
+            }
+            if(!toggleCheckBox){
+                if(isConfirmPasswordValid){
+                    setisTypedWrongconfirmPasswordFormat(false);
+                }
+                if(isPasswordValid){
+                    setisTypedWrongPasswordFormat(false);
+                }
+                console.log('Didnt check the checkbox');
+                
+            }
+        }
+    };
     useEffect(() => {
         setthirdPartMounts(true);
         setsecondPartMounts(false);
         setfirstPartMounts(false);
     }, []);
+    const verifyUserInputs = async (password: string, confirmPassword: string) => {      
+        const passwordPattern = /^(?=.*[A-Z])(?=.*\d.*\d).{6,}$/;
     
+        let isPasswordValid = passwordPattern.test(password);
+        let isConfirmPasswordValid = password === confirmPassword;
+        
+        return { isPasswordValid, isConfirmPasswordValid };
+    };
     return (
         <StyledWrapper style={{backgroundColor: theme.Background.White , flex: 1}} route={'Signup'}>
-            <Formik
-                initialValues={{password: '', confirmPassword: ''}}  // Initialize phone as an empty string
-                validationSchema={validationSchema}
-                onSubmit={handleNextBtn}
-            >
-                {({handleChange, handleSubmit, values, errors, isValid, dirty, touched}) => (
-                    <>
+
                         <FIInput
-                            placeholder={englishTranslationedSentences.yourPasswordPlaceholder}
-                            label={englishTranslationedSentences.passwordLabelText}
-                            onChangeText={handleChange('password')}
-                            value={values.password}
-                            errorMessage={errors.password}
-                            startValue={values.password}
-                            onPress={() => {handleChange('password')('')}}
+                        isTypedWrongFormat={isTypedWrongPasswordFormat}
+                        setisTypedWrongFormat={setisTypedWrongPasswordFormat}
+                        placeholder={englishTranslationedSentences.yourPasswordPlaceholder}
+                        label={englishTranslationedSentences.passwordLabelText}
+                        onChangeText={(password: string) => {setPassword(password);}}
+                        value={password}
+                        errorMessage={englishTranslationedSentences.useAllRequiredCharacters}
+                        placeholderError={englishTranslationedSentences.enterAValidPassword}
+                        bottomErrorMessage={englishTranslationedSentences.passwordHelpers}
+                        startValue={password}
                         />
                         <FIInput
-                            placeholder={englishTranslationedSentences.confirmYourPasswordText}
-                            label={englishTranslationedSentences.confirmPasswordText}
-                            onChangeText={handleChange('confirmPassword')}
-                            value={values.confirmPassword}
-                            errorMessage={errors.confirmPassword}
-                            startValue={values.confirmPassword}
-                            onPress={() => {handleChange('confirmPassword')('')}}
+                        isTypedWrongFormat={isTypedWrongconfirmPasswordFormat}
+                        setisTypedWrongFormat={setisTypedWrongconfirmPasswordFormat}
+                        placeholder={englishTranslationedSentences.confirmYourPasswordText}
+                        label={englishTranslationedSentences.confirmPasswordText}
+                        onChangeText={(confirmPassword: string) => {setconfirmPassword(confirmPassword)}}
+                        value={confirmPassword}
+                        errorMessage={englishTranslationedSentences.confirmPasswordError}
+                        startValue={confirmPassword}
                         />
                 <View style={{gap: 12,flexDirection: 'row', alignItems: 'center',marginLeft: '5%'}}>
                     <CheckBox
@@ -94,10 +130,10 @@ const RegisterionThirdPart: React.FC<RegisterionFirstPartProps> = ({setPassword,
                     </View>
                         <FIButton
                             text={englishTranslationedSentences.signUpText}
-                            disabled={!isValid || (values.password === '' && values.confirmPassword === '') || !toggleCheckBox} 
+                            disabled={password === '' || confirmPassword === ''} 
                             onPress={() => {
                                 setisChecked(true);
-                                handleSubmit();
+                                handleNextBtn();
                             }}
                             disabledBackgroundColor={theme.Elements.ButtonDisabled}
                             backGroundColor={theme.Main.Black}
@@ -105,10 +141,6 @@ const RegisterionThirdPart: React.FC<RegisterionFirstPartProps> = ({setPassword,
                             borderRadius={10}
                         />
 
-
-                    </>
-                )}
-            </Formik>
             <PrivacyPolicyModal setToggleCheckBox={setToggleCheckBox} setisModalChecked={setIsModalChecked} modalVisiblity={modalVisible} setmodalVisibility={setModalVisible}/>
         </StyledWrapper>
     );

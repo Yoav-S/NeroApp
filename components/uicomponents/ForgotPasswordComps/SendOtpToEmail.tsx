@@ -21,23 +21,15 @@ interface ForgotPasswordProps{
     number: string;
     toEmail: string;
   }>>;
-  setOtpSendingFlag: (isSended: boolean) => void;
+  handleSendOtp: (email: string) => void;
+  isLoading: boolean;
 }
 
-const SendOtpToEmail: React.FC<ForgotPasswordProps> = ({setOtpNumber, setOtpSendingFlag}) => {
+const SendOtpToEmail: React.FC<ForgotPasswordProps> = ({ isLoading, handleSendOtp}) => {
     const { theme } = useContext(ThemeContext);
-    const [isLoading, setIsLoading] = useState(false);
-    const {sendOtpEmailAttempt} = useToken()
-    const handleFormSubmit = async (values: {email: string}) => { 
-        setIsLoading(true);
-        const result = await sendOtpEmailAttempt(values.email);
-        setIsLoading(false);
-        const { success, data, error } = result;
-        if(success){
-          setOtpNumber({number:data.otpNumber, toEmail: values.email});
-          setOtpSendingFlag(true);
-        }
-      }
+ const handleFormSubmit = (values: {email: string}) => {
+handleSendOtp(values.email);
+ }
   return (
     <View>
       <Formik
