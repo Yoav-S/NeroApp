@@ -13,9 +13,10 @@ interface PrivacyPolicyModalProps {
   setmodalVisibility: (isVisible: boolean) => void;
   setisModalChecked: (isChecked: boolean) => void;
   setToggleCheckBox: (isToggle: boolean) => void;
+  onPress: () => void;  // Update the type to match your handler
 }
 
-const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({modalVisiblity, setmodalVisibility,  setisModalChecked, setToggleCheckBox}) => {
+const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({onPress,modalVisiblity, setmodalVisibility,  setisModalChecked, setToggleCheckBox}) => {
     const [isModalReachEnd, setisModalReachEnd] = useState(false);
     const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
     const { theme } = useContext(ThemeContext);
@@ -55,6 +56,7 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({modalVisiblity, 
                             disabledBackgroundColor={theme.Elements.ButtonDisabled}
                             backGroundColor={theme.Main.Black}
                             onPress={() => { 
+                              onPress();  
                               setisModalChecked(true);
                               setmodalVisibility(false);
                               setToggleCheckBox(true);

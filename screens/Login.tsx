@@ -11,63 +11,77 @@ import { useNavigation } from '@react-navigation/native';
 import type { LoginScreenProps } from "../utils/interfaces";
 import OrLoginWith from "../components/uicomponents/OrLoginWith";
 import GoogleFBBtns from "../components/uicomponents/GoogleFBBtns";
-import { emailSchema, passwordSchema } from "../utils/statements";
-import {
-    Formik,
-    FormikHelpers,
-    FormikProps,
-    Form,
-    Field,
-    FieldProps,
-  } from 'formik';
-  import * as Yup from 'yup';
+import LoadingModal from "../components/modals/LoadingModal";
 import StyledWrapper from "../components/uicomponents/StyledWrapper";
-
-
-
-const validationSchema = Yup.object().shape({
-    email: emailSchema,
-    password: passwordSchema,
-});
+import { useToken } from "../context/TokenContext";
+import { verifyEmail } from "../utils/verifications";
+import { useToast } from "../context/ToastContext";
 const Login: React.FC<LoginScreenProps> = (props) => {
+  const { showToast } = useToast();
+
     const { theme } = useContext(ThemeContext);
     const navigation = useNavigation<LoginScreenProps['navigation']>();
+    const [isLoading, setIsLoading] = useState(false);
+    const {loginAttempt} = useToken();
+    const [isTypedWrongEmailFormat, setisTypedWrongEmailFormat] = useState(false);
+    const [isTypedWrongPasswordFormat, setisTypedWrongPasswordFormat] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
-    const [Email, setEmail] = useState("");
-    const [Password, setPassword] = useState("");
-
-    const handleFormSubmit = async () => {
-
+    const handleLoginAttempt = async () => {
+      const isEmailValid = await verifyEmail(email);
+      if( isEmailValid){
+        setisTypedWrongPasswordFormat(false);
+        setisTypedWrongEmailFormat(false);
+        try {
+          setIsLoading(true);
+          const result = await loginAttempt(email, password);
+          setIsLoading(false);
+      
+          const { success, data, error } = result;
+          if (success) {
+            showToast('success', 'Success!', 'Login Succeeded', 'top');
+          } else {
+            showToast('error', 'Error!', error || 'An error occurred', 'top');
+          }
+        } catch (error) {
+        }
+      }
+      else{
+        if(!isEmailValid){
+          setisTypedWrongEmailFormat(true);
+          setEmail('');
+        }
+      }
     }
+
+
+
+    
+    
     return (
         <StyledWrapper style={{backgroundColor: theme.Background.White , flex: 1}} route={'Login'}>
             <ArrowBack/>
             <TitleAndSubTitle title={englishTranslationedSentences.wbNeroText} subTitle={englishTranslationedSentences.chooseLoginOptionText}/>
             <ScrollView style={{margin: '3%'}} showsVerticalScrollIndicator={false}>
-            <Formik
-            initialValues={{ email: '', password: '' }}
-            validationSchema={validationSchema}
-            onSubmit={handleFormSubmit}
-           >
-          {({ handleChange, handleSubmit, values, errors, isValid, dirty, touched }) => (
-            <>
+
                 <FIInput 
+                placeholderError={englishTranslationedSentences.placeHolderEmailErrorMessage}
+                errorMessage={englishTranslationedSentences.theEmailIsWrong}
                 label={englishTranslationedSentences.emailLabelText} 
-                value={values.email}
-                startValue={values.email}
-                errorMessage={errors.email}
-                onChangeText={handleChange('email')}
+                value={email}
+                startValue={email}
+                onChangeText={(email: string) => {setEmail(email);}}
                 placeholder={englishTranslationedSentences.yourEmailAddressPlaceholder}
-                onPress={() => {handleChange('email')('')}}
+                isTypedWrongFormat={isTypedWrongEmailFormat}
+                setisTypedWrongFormat={setisTypedWrongEmailFormat}
                 />
                 <FIInput 
-                value={values.password}
-                startValue={values.password}
-                errorMessage={errors.password}
+                value={password}
+                startValue={password}
                 label={englishTranslationedSentences.passwordLabelText} 
-                onChangeText={handleChange('password')}
+                onChangeText={(password: string) => {setPassword(password);}}
                 placeholder={englishTranslationedSentences.yourPasswordPlaceholder}
-                onPress={() => {handleChange('password')('')}}
                 />   
                 <View style={{position: 'relative', marginTop: '3%', marginBottom: '10%'}}>
                 <TouchableOpacity onPress={() => {navigation.navigate('ForgotPassword')}} style={{position: 'absolute', right: 25, top: 15}}>
@@ -81,12 +95,10 @@ const Login: React.FC<LoginScreenProps> = (props) => {
                 textColor={theme.Text.ButtonText}
                 text={englishTranslationedSentences.loginText}
                 borderRadius={10}
-                disabled={!isValid  || (values.email === '' && values.password === '')} 
-                onPress={handleSubmit}
+                disabled={(email === '' || password === '') || isLoading} 
+                onPress={handleLoginAttempt}
                 />
-                      </>
-    )}
-  </Formik>
+
                     <OrLoginWith/>
                     <GoogleFBBtns 
                     onPressFacebook={() => {console.log('Facebook Pressed');}} 
@@ -99,6 +111,7 @@ const Login: React.FC<LoginScreenProps> = (props) => {
                     </View>
 
                     </ScrollView>
+                    {isLoading && <LoadingModal/>}
                   </StyledWrapper>
     )
 }

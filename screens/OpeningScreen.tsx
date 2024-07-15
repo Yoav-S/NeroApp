@@ -7,12 +7,16 @@ import FIButton from '../components/uicomponents/FIButton';
 import Title from '../components/uicomponents/Title';
 import { englishTranslationedSentences } from '../utils/sentences';
 import SentenceCarousel from '../components/uicomponents/SentenceCarousel';
-
+import { useToken } from '../context/TokenContext';
 const OpeningScreen: React.FC<OpeningScreenProps> = () => {
   const { theme } = useContext(ThemeContext);
+  const {loginAsAGuestAttempt} = useToken();
+
   const navigation = useNavigation<OpeningScreenProps['navigation']>();
 
+  const loginAttempt = () => {
 
+  }
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.Background.White }]}>
       <Title name='NERO' />
@@ -53,7 +57,7 @@ const OpeningScreen: React.FC<OpeningScreenProps> = () => {
         disabled={false}
         onPress={() => navigation.navigate('Signup')}
       />
-      <TouchableOpacity style={{margin: '2%'}} onPress={() => {console.log('pressed');}}>
+      <TouchableOpacity style={{margin: '2%'}} onPress={() => {loginAttempt}}>
         <Text style={{color: theme.Main.Black, fontFamily: 'Noto Sans', fontWeight: '700', fontSize: 16, lineHeight: 20}}>{englishTranslationedSentences.continueAsAGuestText}</Text>
       </TouchableOpacity>
     </SafeAreaView>

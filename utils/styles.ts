@@ -7,6 +7,7 @@ export const styles = StyleSheet.create({
       fontSize: 24,
       lineHeight: 28,
       alignSelf: 'center',
+      textAlign: 'center'
     },
     textSubTitleStyle: {
       fontFamily: 'Noto Sans',
@@ -14,6 +15,8 @@ export const styles = StyleSheet.create({
       fontSize: 16,
       lineHeight: 24,
       alignSelf: 'center',
+      textAlign: 'center'
+
     },
     textLabelStyle: {
         fontFamily: 'Noto Sans',
@@ -38,5 +41,12 @@ export const styles = StyleSheet.create({
         fontWeight: '700',
         fontSize: 12,
         lineHeight: 16,
+      },
+      errorTextStyle: {
+        fontFamily: 'Noto Sans',
+        fontWeight: '500',
+        color: 'red',
+        fontSize: 12,
+        lineHeight: 16
       }
   });

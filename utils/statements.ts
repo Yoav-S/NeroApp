@@ -3,17 +3,17 @@ import * as Yup from 'yup';
 /* eslint-disable prettier/prettier */
 
 
-  export const emailSchema = Yup.string().required('required') .email('Invalid email address');
+  export const emailSchema = Yup.string().required('required') .email('Email address is wrong');
 
-  export const passwordSchema = Yup.string() .required('required') .min(6, 'Password must be at least 6 characters');
+  export const passwordSchema = Yup.string() .required('required') .min(6, 'Password is wrong');
  
   export const fullnameSchema =  Yup.string().required('required').min(2,'Name must be have at least one letter');
 
-  export const firstNameSchema =  Yup.string().required('required').min(2,'First Name must be have at least one letter');
+  export const firstNameSchema =  Yup.string().required('required').min(2,'First Name is wrong');
 
-  export const lastNameSchema =  Yup.string().required('required').min(2,'Last Name must be have at least one letter');
+  export const lastNameSchema =  Yup.string().required('required').min(2,'Last Name is wrong');
 
-  export const phoneNumberSchema = Yup.string().matches(/^\d{10}$/, 'Phone number must be exactly 10 digits').required('Phone number is required');
+  export const phoneNumberSchema = Yup.string().matches(/^\d{10}$/, 'Phone number is wrong').required('Phone number is required');
   
   export const genderSchema = Yup.string() .required('required')
 
