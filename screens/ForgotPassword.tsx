@@ -18,6 +18,9 @@ const ForgotPassword: React.FC = () => {
   const { theme } = useContext(ThemeContext);
   const {sendOtpEmailAttempt, resetPasswordAttempt} = useToken();
   const [isLoading, setisloading] = useState(false);
+  const [currentOtpValue, setCurrentOtpValue] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setconfirmPassword] = useState('');
   const [isTypedWrongOtp, setisTypedWrongOtp] = useState(false);
   const [otpNumber, setOtpNumber] = useState<{
     number: string;
@@ -42,7 +45,7 @@ const ForgotPassword: React.FC = () => {
   }
   else{
     setisTypedWrongOtp(true);
-    //failure code
+    setCurrentOtpValue('');
   }
   }
 
@@ -117,12 +120,14 @@ const ForgotPassword: React.FC = () => {
             handleSendOtp={handleSendOtp}/>) : 
             (!otpVerifiedFlag ? 
               (<OtpInputCom 
+                currentOtpValue={currentOtpValue}
+                setCurrentOtpValue={setCurrentOtpValue}
                 isTypedWrongOtp={isTypedWrongOtp} 
                 handleOtpAttempt={handleOtpAttempt} 
                 sendOtpAgain={sendOtpAgain} 
-                setOtpVerifiedFlag={setOtpVerifiedFlag}/>) : 
+                />) : 
                 (!passwordChangedFlag ? 
-                  (<ResetPassword isLoading={isLoading} setNewUserPassword={handleUserPasswordChange}/>) : 
+                  (<ResetPassword confirmPassword={confirmPassword} setconfirmPassword={setconfirmPassword} password={password} setPassword={setPassword} isLoading={isLoading} setNewUserPassword={handleUserPasswordChange}/>) : 
                   (<PasswordChanged/>)))
          }
 

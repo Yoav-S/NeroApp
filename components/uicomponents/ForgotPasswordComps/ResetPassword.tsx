@@ -1,66 +1,81 @@
 /* eslint-disable prettier/prettier */
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import {View, Text} from 'react-native';
-import * as Yup from 'yup';
-import {Formik, FormikHelpers} from 'formik';
-import { passwordSchema } from '../../../utils/statements';
+import { verifypasswordUserInputs } from '../../../utils/verifications';
 import FIInput from '../FIInput';
 import { englishTranslationedSentences } from '../../../utils/sentences';
 import FIButton from '../FIButton';
 import { ThemeContext } from '../../../context/ThemeContext';
 interface Props {
-    isLoading: boolean,
     setNewUserPassword: (newPassword: string) => void;
-}
-const validationSchema = Yup.object().shape({
-    password: passwordSchema,
-    confirmPassword: Yup.string()
-      .oneOf([Yup.ref('password')], 'Passwords must match')
-      .required('Confirm password is required'),
-});
-const ResetPassword: React.FC<Props> = ({ setNewUserPassword, isLoading}) => {
-    const { theme } = useContext(ThemeContext);
+    password: string;
+    confirmPassword: string;
+    isLoading: boolean;
+    setconfirmPassword: (confirmPassword: string) => void;
+    setPassword: (password: string) => void;
 
-    const handleFormSubmit = (values: {password: string}) => {
-        setNewUserPassword(values.password);
+}
+
+const ResetPassword: React.FC<Props> = ({ setNewUserPassword, isLoading,password,setPassword,confirmPassword, setconfirmPassword}) => {
+    const { theme } = useContext(ThemeContext);
+    const [isTypedWrongPasswordFormat, setisTypedWrongPasswordFormat] = useState(false);
+    const [isTypedWrongconfirmPasswordFormat, setisTypedWrongconfirmPasswordFormat] = useState(false);
+    const handleFormSubmit = async () => {
+        const { isPasswordValid, isConfirmPasswordValid } = await verifypasswordUserInputs(password, confirmPassword);
+
+            if(!isPasswordValid){
+                setisTypedWrongPasswordFormat(true);
+                setPassword('');
+                if(isConfirmPasswordValid){
+                    setisTypedWrongconfirmPasswordFormat(false);
+                }
+
+            }
+            else if(!isConfirmPasswordValid){
+                setisTypedWrongconfirmPasswordFormat(true);
+                setconfirmPassword('');
+                if(isPasswordValid){
+                    setisTypedWrongPasswordFormat(false);
+                }
+        }
+        else{
+            setNewUserPassword(password);
+        }
     }
   return (
     <View>
-            <Formik
-                initialValues={{password: '', confirmPassword: ''}}  // Initialize phone as an empty string
-                validationSchema={validationSchema}
-                onSubmit={handleFormSubmit}
-            >
-                {({handleChange, handleSubmit, values, errors, isValid, dirty, touched}) => (
-                    <>
-                        <FIInput
-                        
-                            placeholder={englishTranslationedSentences.yourPasswordPlaceholder}
-                            label={englishTranslationedSentences.passwordLabelText}
-                            onChangeText={handleChange('password')}
-                            value={values.password}
-                            errorMessage={errors.password}
-                            startValue={values.password}
-                            onPress={() => {handleChange('password')('')}}
+
+<FIInput
+                        isTypedWrongFormat={isTypedWrongPasswordFormat}
+                        setisTypedWrongFormat={setisTypedWrongPasswordFormat}
+                        placeholder={englishTranslationedSentences.yourPasswordPlaceholder}
+                        label={englishTranslationedSentences.passwordLabelText}
+                        onChangeText={(password: string) => {setPassword(password);}}
+                        value={password}
+                        errorMessage={englishTranslationedSentences.useAllRequiredCharacters}
+                        placeholderError={englishTranslationedSentences.enterAValidPassword}
+                        bottomErrorMessage={englishTranslationedSentences.passwordHelpers}
+                        startValue={password}
                         />
                         <FIInput
-                            placeholder={englishTranslationedSentences.confirmYourPasswordText}
-                            label={englishTranslationedSentences.confirmPasswordText}
-                            onChangeText={handleChange('confirmPassword')}
-                            value={values.confirmPassword}
-                            errorMessage={errors.confirmPassword}
-                            startValue={values.confirmPassword}
-                            onPress={() => {handleChange('confirmPassword')('')}}
+                        isTypedWrongFormat={isTypedWrongconfirmPasswordFormat}
+                        setisTypedWrongFormat={setisTypedWrongconfirmPasswordFormat}
+                        placeholder={englishTranslationedSentences.confirmYourPasswordText}
+                        label={englishTranslationedSentences.confirmPasswordText}
+                        onChangeText={(confirmPassword: string) => {setconfirmPassword(confirmPassword)}}
+                        value={confirmPassword}
+                        errorMessage={englishTranslationedSentences.confirmPasswordError}
+                        startValue={confirmPassword}
                         />
                 <View style={{gap: 12,flexDirection: 'row', alignItems: 'center',marginLeft: '5%'}}>
 
             
                     </View>
                         <FIButton
-                            text={englishTranslationedSentences.signUpText}
-                            disabled={!isValid || (values.password === '' && values.confirmPassword === '') || isLoading} 
+                            text={englishTranslationedSentences.resetPasswordText}
+                            disabled={(password === '' && confirmPassword === '') || isLoading} 
                             onPress={() => {
-                                handleSubmit();
+                                handleFormSubmit();
                             }}
                             disabledBackgroundColor={theme.Elements.ButtonDisabled}
                             backGroundColor={theme.Main.Black}
@@ -68,10 +83,6 @@ const ResetPassword: React.FC<Props> = ({ setNewUserPassword, isLoading}) => {
                             borderRadius={10}
                         />
 
-
-                    </>
-                )}
-            </Formik>
     </View>
   );
 };

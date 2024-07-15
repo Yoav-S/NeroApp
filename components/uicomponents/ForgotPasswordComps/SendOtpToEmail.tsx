@@ -7,15 +7,9 @@ import { englishTranslationedSentences } from '../../../utils/sentences';
 import { Formik } from 'formik';
 import FIInput from '../FIInput';
 import FIButton from '../FIButton';
-import SentenceBtn from '../SentenceBtn';
 import { ThemeContext } from '../../../context/ThemeContext';
-import * as Yup from 'yup';
-import { emailSchema } from '../../../utils/statements';
-import { useToken } from '../../../context/TokenContext';
+import { verifyEmail } from '../../../utils/verifications';
 
-const validationSchema = Yup.object().shape({
-    email: emailSchema,
-  });
 interface ForgotPasswordProps{
   setOtpNumber: React.Dispatch<React.SetStateAction<{
     number: string;
@@ -27,24 +21,35 @@ interface ForgotPasswordProps{
 
 const SendOtpToEmail: React.FC<ForgotPasswordProps> = ({ isLoading, handleSendOtp}) => {
     const { theme } = useContext(ThemeContext);
- const handleFormSubmit = (values: {email: string}) => {
-handleSendOtp(values.email);
+    const [isTypedWrongEmailFormat, setisTypedWrongEmailFormat] = useState(false);
+    const [isTypedWrongPasswordFormat, setisTypedWrongPasswordFormat] = useState(false);
+    const [email, setEmail] = useState('');
+ const handleFormSubmit = async () => {
+  const isVeified = await verifyEmail(email);
+  if(isVeified){
+    setisTypedWrongEmailFormat(false);
+    handleSendOtp(email);
+  }
+  else{
+    setEmail('');
+    setisTypedWrongEmailFormat(true);
+  }
  }
+
   return (
     <View>
-      <Formik
-            initialValues={{ email: '' }}
-            validationSchema={validationSchema}
-            onSubmit={handleFormSubmit}
-           >
-          {({ handleChange, handleSubmit, values, errors, isValid  }) => (
-            <>
-      <FIInput 
-      onChangeText={handleChange('email')}
-      label={englishTranslationedSentences.emailLabelText} 
-      placeholder={englishTranslationedSentences.yourEmailAddressPlaceholder}
-      value={values.email}
-      />
+
+              <FIInput 
+                placeholderError={englishTranslationedSentences.placeHolderEmailErrorMessage}
+                errorMessage={englishTranslationedSentences.theEmailIsWrong}
+                label={englishTranslationedSentences.emailLabelText} 
+                value={email}
+                startValue={email}
+                onChangeText={(email: string) => {setEmail(email);}}
+                placeholder={englishTranslationedSentences.yourEmailAddressPlaceholder}
+                isTypedWrongFormat={isTypedWrongEmailFormat}
+                setisTypedWrongFormat={setisTypedWrongEmailFormat}
+                />
       
       <FIButton
       backGroundColor={theme.Main.Black}
@@ -53,11 +58,8 @@ handleSendOtp(values.email);
       textColor={theme.Text.ButtonText}
       text={englishTranslationedSentences.sendCode}
       borderRadius={10}
-      onPress={handleSubmit}
-      disabled={!isValid  || values.email === '' || isLoading} />
-      </>
-          )}
-        </Formik>
+      onPress={handleFormSubmit}
+      disabled={email === '' || isLoading} />
 
     </View>
   );

@@ -57,10 +57,8 @@ export const TokenProvider: React.FC<Props> = ({ children }) => {
     }
   };
   const loginAttempt = async (email: string, password: string): Promise<{ success: boolean; data?: any; error?: string }> => {
-    console.log('arrived login');
-    
     try {
-      const result: AxiosResponse = await api.post('/auth/login', { email, password });  
+      const result = await api.post('/auth/login', { email, password });
       if (result.data && result.data.user) {
         setAuthState({
           token: result.data.user.token,
@@ -71,16 +69,20 @@ export const TokenProvider: React.FC<Props> = ({ children }) => {
         setCurrentUser(result.data.user);
         axios.defaults.headers.common['Authorization'] = `Bearer ${result.data.user.token}`;
         await Keychain.setGenericPassword(TOKEN_KEY || '', result.data.user.token);
-  
-        return { success: true, data: result.data.user, error: 'You have been successfully logged in' };
+        
+        return { success: true, data: result.data.user, error: result.data.message };
       } else {
-        return { success: false, error: 'Login failed, no user data returned' };
+        return { success: false, error: result.data.message };
       }
     } catch (error: any) {
-      console.error('Error during login attempt:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error.response.data.message };
     }
-  };
+  }
+  
+
+
+  
+  
   
   
   async function handleTokenError(): Promise<void> {
@@ -90,16 +92,8 @@ export const TokenProvider: React.FC<Props> = ({ children }) => {
   const signupAttempt = async (email: string, password: string, firstName: string, lastName: string, phone: string): Promise<{ success: boolean; data?: any; error?: string }> => {
     try {
       const response = await api.post('/auth/signup', { email, password, firstName, lastName, phone });
-      console.log(response.data);
-      
-      const { token, user } = response.data;
-      setToken(token);
-      setCurrentUser(user);
-      setAuthState({
-        token: token,
-        authenticated: true
-      });
-      return { success: true, data: response.data.user, error: 'You have been successfully registered' };
+      console.log(response.data); 
+      return { success: true, data: response.data.user, error: response.data.message };
     } catch (error: any) {
       return { success: false, error: error.message };
     }
@@ -117,7 +111,6 @@ export const TokenProvider: React.FC<Props> = ({ children }) => {
       
       return { success: true };
     } catch (error: any) {
-      console.error('Logout error:', error);
       return { success: false, error: 'Error trying to logout' };
     }
   };
@@ -125,11 +118,9 @@ export const TokenProvider: React.FC<Props> = ({ children }) => {
   const resetPasswordAttempt = async (password: string, email: string): Promise<{isChanged: any; success: boolean; error?: string}> => {
 try{
   const response = await api.post(`/auth/resetPassword`, {password, email});
-  console.log(response.data);
-  return { isChanged: response.data, success: true };   
+  return { isChanged: response.data, success: true, error: response.data.message };   
 } catch (error: any) {
-  console.error('Logout error:', error);
-  return { isChanged: false,success: false, error: 'Error changing password' };
+  return { isChanged: false,success: false, error: error.message };
 }
   }
 
@@ -139,15 +130,17 @@ try{
       const response = await api.post(`/auth/sendEmailOTP/${encodeURIComponent(email)}`);
       console.log('OTP sending response:', response.data.otp);
       if(response.data.otp.length === 4){
-        return { data: response.data.otp, success: true };
+        return { data: response.data.otp, success: true, error: response.data.message };
       }
       else{
-        return {data: response.data.otp ,success: false };// even that it not sended
+        return {data: response.data.otp ,success: false, error: response.data.message };// even that it not sended
       }
     } catch (error: any) {
-      console.error('OTP send error:', error.response?.data || error.message);
-      return { success: false, error: 'Please check your email' };// even that it not sended
+      return { success: false, error: error.message };// even that it not sended
     }
+  }
+  const loginAsAGuestAttempt = async () => {
+    
   }
   return (
     <TokenContext.Provider value={{ 
@@ -164,7 +157,8 @@ try{
       authState,
       validateToken ,
       sendOtpEmailAttempt,
-      resetPasswordAttempt}}>
+      resetPasswordAttempt,
+      loginAsAGuestAttempt}}>
       {children}
     </TokenContext.Provider>
   );

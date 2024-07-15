@@ -61,6 +61,7 @@ resetPasswordAttempt: (password: string ,email: string) => Promise<{
   isChanged: any; 
   error?: string 
 }>;
+loginAsAGuestAttempt: () => void;
 }
 
   export  interface ThemeContextType {
@@ -120,8 +121,10 @@ export interface SentenceBtnType{
 
     token: string;
     setToken: (token: string) => void;
-    getUserById: (userId: string, token: string) => Promise<CurrentUserType | null>
-  }
+    getUserById: (userId: string | null, token: string | null) => Promise<{ 
+      user: CurrentUserType | null; 
+      error: string | null; 
+    }>;  }
   export interface CurrentUserType {
 
     userId: string;

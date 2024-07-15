@@ -10,13 +10,13 @@ interface Props {
 isTypedWrongOtp: boolean;
 handleOtpAttempt: (userOtp: string) => void;
 sendOtpAgain: () => void
-setOtpVerifiedFlag: (isVerified: boolean) => void;
+currentOtpValue: string;
+setCurrentOtpValue: (otp: string) => void;
 }
 
-const OtpInputCom: React.FC<Props> = ({isTypedWrongOtp, handleOtpAttempt, sendOtpAgain}) => {
+const OtpInputCom: React.FC<Props> = ({isTypedWrongOtp, handleOtpAttempt, sendOtpAgain, currentOtpValue, setCurrentOtpValue}) => {
   const { theme } = useContext(ThemeContext);
   const [currentOtpLength, setCurrentOtpLength] = useState(0);
-  const [currentOtpValue, setCurrentOtpValue] = useState('');
 
   const [secondsLeft, setSecondsLeft] = useState(60);
   const [isActive, setIsActive] = useState(false);
@@ -26,7 +26,10 @@ const OtpInputCom: React.FC<Props> = ({isTypedWrongOtp, handleOtpAttempt, sendOt
     }, [])
 
 
-
+    useEffect(() => {
+      console.log('arrived');
+    setCurrentOtpValue('');      
+    }, [isTypedWrongOtp])
 
   const startCountdown = () => {
     setIsActive(true);
@@ -50,6 +53,7 @@ const OtpInputCom: React.FC<Props> = ({isTypedWrongOtp, handleOtpAttempt, sendOt
     sendOtpAgain();
     startCountdown();
   }
+console.log(currentOtpValue);
 
   return (
     <View style={{ width: 300, alignSelf: 'center', marginTop: 28,}}>
